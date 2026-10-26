@@ -1,0 +1,3 @@
+@echo off
+echo Installing and Launching Grandmaster 3D Chess Local App...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-and-run.ps1"

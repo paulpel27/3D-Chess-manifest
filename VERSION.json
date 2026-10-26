@@ -1,0 +1,24 @@
+{
+  "appName": "Grandmaster 3D Chess PWA",
+  "version": "1.5.0 (v5)",
+  "savedAt": "2026-10-17T13:26:51+02:00",
+  "features": [
+    "3D Chess Board with glare-free Lambert square materials and Dual-Tone (Jet-Black + Gold) 3D physical grid bars",
+    "Sculpted 3D Staunton chess pieces (Pawn, Rook, Knight, Bishop, Queen, King) with parabolic move animations",
+    "5 AI Difficulty Levels (Novice 600 ELO, Casual 1000 ELO, Club 1400 ELO, Tactician 1800 ELO, Grandmaster 2200 ELO)",
+    "3 Board Themes (Classic Walnut & Ivory, Obsidian & Gold Marble, Grandmaster Tournament Green)",
+    "Web Audio API synthesized sound effects",
+    "Offline-ready PWA Manifest, Service Worker (v5 network-first), and Portable/Shortcut installer modal"
+  ],
+  "files": [
+    "index.html",
+    "manifest.json",
+    "sw.js",
+    "css/styles.css",
+    "js/board3d.js",
+    "js/ai.js",
+    "js/sound.js",
+    "js/app.js",
+    "icons/icon.svg"
+  ]
+}

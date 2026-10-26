@@ -1,0 +1,3 @@
+@echo off
+echo Starting Grandmaster 3D Chess Local PWA Server on http://localhost:8080 ...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-and-run.ps1" -ServerOnly

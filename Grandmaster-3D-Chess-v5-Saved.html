@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#d4af37" />
+  <meta name="description" content="Play 3D Chess against 5 levels of computer AI difficulty in an installable offline-ready Progressive Web App." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Grandmaster 3D Chess — 5-Level AI PWA</title>
+  <link id="manifest-link" rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="stylesheet" href="css/styles.css?v=6" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div id="canvas-container" aria-label="3D Chess Board"></div>
+
+    <header class="top-hud">
+      <div class="brand-pill">
+        <div class="brand-icon">♞</div>
+        <span class="brand-title">GRANDMASTER 3D</span>
+      </div>
+
+      <div id="status-banner" class="status-banner">
+        <span id="turn-dot" class="turn-dot"></span>
+        <span id="status-text">White to Move • Your Turn</span>
+        <span id="thinking-badge" class="thinking-badge hidden">
+          <span class="pulse-dot"></span>
+          AI Thinking
+        </span>
+      </div>
+
+      <div class="quick-camera-bar" role="group" aria-label="Camera View Presets">
+        <button class="cam-btn active" data-cam="white" title="White Perspective">White View</button>
+        <button class="cam-btn" data-cam="black" title="Black Perspective">Black View</button>
+        <button class="cam-btn" data-cam="top" title="Top-Down Overhead View">Top View</button>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div>
+        <div class="section-label">
+          <span>AI Difficulty (5 Levels)</span>
+        </div>
+        <div class="difficulty-grid" role="radiogroup" aria-label="Select AI Difficulty">
+          <button class="diff-btn" data-level="1">
+            <span class="diff-lvl">1</span>
+            <span class="diff-tag">Novice</span>
+          </button>
+          <button class="diff-btn" data-level="2">
+            <span class="diff-lvl">2</span>
+            <span class="diff-tag">Casual</span>
+          </button>
+          <button class="diff-btn active" data-level="3">
+            <span class="diff-lvl">3</span>
+            <span class="diff-tag">Club</span>
+          </button>
+          <button class="diff-btn" data-level="4">
+            <span class="diff-lvl">4</span>
+            <span class="diff-tag">Tactician</span>
+          </button>
+          <button class="diff-btn" data-level="5">
+            <span class="diff-lvl">5</span>
+            <span class="diff-tag">Master</span>
+          </button>
+        </div>
+        <div class="diff-info-box">
+          <div class="diff-info-header">
+            <span id="diff-name">Level 3 — Club Player</span>
+            <span id="diff-elo">1400 ELO</span>
+          </div>
+          <p id="diff-desc">Solid positional awareness, active piece placement, and 3-ply tactical search.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">
+          <span>Play As</span>
+          <span>Board Theme</span>
+        </div>
+        <div class="options-row">
+          <div class="Segmented-group">
+            <button class="seg-btn color-btn active" data-color="w">♔ White</button>
+            <button class="seg-btn color-btn" data-color="b">♚ Black</button>
+          </div>
+          <select id="theme-select" class="theme-select" aria-label="Select 3D Board Material Theme">
+            <option value="classic">Walnut &amp; Ivory</option>
+            <option value="royal">Obsidian &amp; Gold</option>
+            <option value="emerald">Tournament Green</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">
+          <span>Captured Pieces</span>
+        </div>
+        <div class="captures-card">
+          <div class="capture-row">
+            <span class="capture-label">White</span>
+            <span id="captured-by-white" class="capture-pieces">—</span>
+            <span id="white-adv" class="score-adv"></span>
+          </div>
+          <div class="capture-row">
+            <span class="capture-label">Black</span>
+            <span id="captured-by-black" class="capture-pieces">—</span>
+            <span id="black-adv" class="score-adv"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+        <div class="section-label">
+          <span>Move History</span>
+        </div>
+        <div id="history-list" class="history-container"></div>
+      </div>
+
+      <div class="actions-grid">
+        <button id="btn-undo" class="btn" title="Undo last turn">↩ Undo</button>
+        <button id="btn-hint" class="btn" title="Ask engine for best move hint">💡 Hint</button>
+        <button id="btn-sound" class="btn" style="grid-column: span 2;">🔊 Sound: On</button>
+        <button id="btn-new-game" class="btn btn-primary">✨ New Match</button>
+        <button id="btn-install" class="btn btn-install">📲 Install Chess App (PWA)</button>
+      </div>
+    </aside>
+
+    <div class="controls-hint">
+      🖱️ Left-click piece to select &amp; move • Drag to orbit 3D camera • Scroll to zoom
+    </div>
+
+    <div id="promo-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h2 class="modal-title">Promote Pawn</h2>
+        <p class="modal-subtitle">Choose a piece for your promoted pawn:</p>
+        <div class="promo-grid">
+          <button class="promo-btn" data-piece="q">♕<span>Queen</span></button>
+          <button class="promo-btn" data-piece="r">♖<span>Rook</span></button>
+          <button class="promo-btn" data-piece="b">♗<span>Bishop</span></button>
+          <button class="promo-btn" data-piece="n">♘<span>Knight</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameover-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h2 id="gameover-title" class="modal-title">Checkmate!</h2>
+        <p id="gameover-subtitle" class="modal-subtitle">Victory against the AI.</p>
+        <button id="btn-play-again" class="btn btn-primary" style="width: 100%;">Play Again</button>
+      </div>
+    </div>
+
+    <div id="install-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card install-card">
+        <h2 id="install-modal-title" class="modal-title">Install as Local Desktop App</h2>
+        <p id="install-modal-desc" class="modal-subtitle">
+          Install Grandmaster 3D Chess as a standalone local application window on your computer.
+        </p>
+
+        <div class="install-options">
+          <button id="btn-download-local-installer" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">
+            🖥️ 1-Click Local App Installer (.bat)
+          </button>
+          <button id="btn-download-standalone" class="btn btn-install" style="width: 100%; margin-bottom: 14px;">
+            ⚡ Download Portable Single-File App (.html)
+          </button>
+
+          <div class="install-steps-box">
+            <div class="install-steps-title">How to Install as a Standalone Local App:</div>
+            <ol class="install-steps-list">
+              <li><strong>Option A (Instant Local App):</strong> Double-click <code>Install-Local-App.bat</code> in the project folder (or click the gold button above and run it). It creates a <strong>Desktop &amp; Start Menu App</strong> that opens in a dedicated standalone app window without browser tabs.</li>
+              <li><strong>Option B (Browser PWA):</strong> Double-click <code>Start-PWA-Server.bat</code> in the project folder to open <code>http://localhost:8080</code>, then click <strong>📲 Install Local App Now</strong>.</li>
+            </ol>
+          </div>
+        </div>
+
+        <button id="btn-close-install" class="btn" style="width: 100%; margin-top: 14px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sound.js?v=6"></script>
+  <script src="js/ai.js?v=6"></script>
+  <script src="js/board3d.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
+</body>
+</html>
